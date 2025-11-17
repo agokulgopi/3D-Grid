@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D Model Showcase — Popup Viewer</title>
+
+<style>
+/* ------------------------------
+   GLOBAL + THEME
+------------------------------ */
+:root{
+  --bg:#0f1724;
+  --card:#0b1220;
+  --accent:#06b6d4;
+  --text:#e6eef6;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:Inter,system-ui,Arial,sans-serif;
+  background:linear-gradient(180deg,#071021 0%,#061724 100%);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ------------------------------
+   HEADER / FOOTER
+------------------------------ */
+header, footer{
+  padding:18px 24px;
+  background:rgba(255,255,255,0.02);
+  backdrop-filter:blur(4px);
+}
+header{
+  display:flex;align-items:center;justify-content:space-between;
+}
+header h1{margin:0;font-size:1.1rem;color:#00FFEF;}
+header nav a{
+  color:var(--text);
+  opacity:.8;
+  margin-left:12px;
+  text-decoration:none;
+}
+
+/* ------------------------------
+   GRID + CARD
+------------------------------ */
+.container{
+  width:100%;
+  max-width:1200px;
+  margin:28px auto;
+  padding:0 18px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:22px;
+}
+
+/* CARD BASE */
+.card{
+  position:relative;
+  background:var(--card);
+  border-radius:14px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .25s ease, box-shadow .25s ease;
+  perspective:800px;
+  transform-style:preserve-3d;
+}
+
+/* 3D TILT GLOW EFFECT */
+.card::after {
+  position:absolute;
+  content:"";
+  top:5vw;
+  left:0;
+  right:0;
+  z-index:-1;
+  width:100%;
+  height:100%;
+  margin:0 auto;
+  transform:scale(0.75);
+  filter:blur(5vw);
+  background:linear-gradient(270deg,#0fffc1,#7e0fff);
+  background-size:200% 200%;
+  animation:animateGlow 10s ease infinite;
+}
+
+@keyframes animateGlow{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* Text shifting effect */
+.card{
+  animation:textColor 10s ease infinite;
+}
+@keyframes textColor{
+  0%{color:#7e0fff;}
+  50%{color:#0fffc1;}
+  100%{color:#7e0fff;}
+}
+
+/* Card thumbnail */
+.thumb{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+}
+
+.card-body{
+  padding:14px;
+  color:white;
+}
+
+/* ------------------------------
+   MODAL OVERLAY
+------------------------------ */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(2,6,23,0.65);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1200;
+  padding:20px;
+}
+.overlay.open{display:flex;}
+
+.modal{
+  width:100%;
+  max-width:1100px;
+  background:#DEF;
+  border-radius:12px;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:1fr 380px;
+  min-height:60vh;
+  position:relative;
+}
+
+@media(max-width:760px){
+  .modal{
+    grid-template-columns:1fr;
+    min-height:70vh;
+  }
+}
+
+/* Divider line for desktop */
+.modal::before{
+  content:"";
+  position:absolute;
+  top:0;bottom:0;
+  left:calc(100% - 380px - 1px);
+  width:1px;
+  background:rgba(255,255,255,0.32);
+  backdrop-filter:blur(14px);
+  border-right:1px solid rgba(255,255,255,0.55);
+  box-shadow:0 0 12px rgba(0,0,0,.12);
+  pointer-events:none;
+}
+@media(max-width:760px){
+  .modal::before{display:none;}
+}
+
+/* ------------------------------
+   VIEWER
+------------------------------ */
+.viewer{
+  position:relative;
+  background:#ffffff !important;
+}
+.viewer canvas{
+  width:100%;height:100%;
+  background:#ffffff !important;
+  display:block;
+}
+
+/* ------------------------------
+   LOADER
+------------------------------ */
+.loader-wrap{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  background:#ffffff;z-index:20;
+  transition:opacity .4s ease;
+}
+.loader-bar{
+  width:60%;height:6px;
+  background:#ddd;border-radius:4px;
+  overflow:hidden;margin-top:10px;
+}
+.loader-bar-fill{
+  height:100%;width:0;background:#06b6d4;
+  transition:width .2s ease;
+}
+.loader-text{color:#333;font-size:15px;margin-top:6px;}
+.loader-hidden{opacity:0;pointer-events:none;}
+
+/* ROTATE HINT */
+.rotate-hint{
+  position:absolute;
+  left:50%;bottom:28px;
+  transform:translateX(-50%);
+  padding:8px 14px;background:rgba(255,255,255,0.92);
+  border-radius:8px;font-size:14px;color:#222;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+  pointer-events:none;opacity:0;
+  transition:opacity .35s ease;
+  z-index:25;
+}
+.rotate-hint.show{opacity:1;}
+
+/* ------------------------------
+   INFO SIDEBAR (UPDATED WITH GLOW)
+------------------------------ */
+.info{
+  position:relative;
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  color:#000;
+  z-index:2;
+  border-radius:16px;
+  backdrop-filter:blur(6px);
+}
+
+/* Neon glow behind INFO */
+.info::after {
+  content:"";
+  position:absolute;
+  top:3vw;
+  left:0;
+  right:0;
+  height:100%;
+  width:100%;
+  z-index:-1;
+
+  transform:scale(0.85);
+  filter:blur(4vw);
+
+  background:linear-gradient(270deg,#0fffc1,#7e0fff);
+  background-size:200% 200%;
+  animation:infoGlow 9s ease infinite;
+
+  border-radius:20px;
+}
+
+@keyframes infoGlow{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+.close{
+  position:absolute;right:12px;top:12px;
+  background:transparent;border:none;
+  color:#000;font-size:22px;cursor:pointer;
+}
+
+/* ------------------------------
+   ENV BUTTONS (updated)
+------------------------------ */
+.env-buttons{
+  display:flex;gap:8px;margin-top:10px;
+}
+.env-buttons button{
+  flex:1;
+  padding:10px;
+  border:none;
+  background:#ddd;
+  color:#222;
+  border-radius:6px;
+  cursor:pointer;
+  transition:transform .25s ease, background .25s ease, box-shadow .25s ease;
+}
+
+.env-buttons button:hover{
+  transform:translateY(-3px) scale(1.05);
+  box-shadow:0 10px 20px rgba(0,0,0,.15);
+}
+
+.env-buttons button.active{
+  background:var(--accent);
+  color:white;
+  box-shadow:0 0 12px rgba(6,182,212,0.7);
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- Import Maps for Three.js -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+    "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+  }
+}
+</script>
+
+<header>
+  <h1>3D Model Showcase</h1>
+  <!-- nav><a href="#">Home</a><a href="#">Models</a><a href="#">About</a></nav> -->
+</header>
+
+<main class="container">
+  <section class="grid" id="model-grid"></section>
+</main>
+
+<footer>
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between">
+    <span>© Your Studio — 2025</span>
+    <span>Built with Three.js</span>
+  </div>
+</footer>
+
+<!-- MODAL VIEWER -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="viewer" id="viewer">
+      <div class="loader-wrap" id="loader">
+        <div class="loader-bar"><div class="loader-bar-fill" id="loader-fill"></div></div>
+        <div class="loader-text" id="loader-text">Loading 0%</div>
+      </div>
+      <div id="rotate-hint" class="rotate-hint">Drag to rotate</div>
+      <button class="close" id="close-btn">✕</button>
+    </div>
+
+    <aside class="info">
+      <h2 id="info-title"></h2>
+      <p id="info-desc"></p>
+
+      <div class="env-buttons">
+        <button data-env="studio">Studio</button>
+        <button data-env="day">Day</button>
+        <button data-env="night">Night</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ------------------------------
+     JAVASCRIPT 
+------------------------------ -->
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+
+/* MODELS */
+const models=[
+  {id:1,title:'Vintage Camera',model:'./models/flowervase.glb',thumbnail:'thumbnails/flower.jpg',description:'A stylized vintage camera.'},
+  {id:2,title:'Sci-Fi Helmet',model:'./models/mobile_phone.glb',thumbnail:'thumbnails/phone.jpg',description:'Helmet with emissive visor.'},
+  {id:3,title:'Mechanical Arm',model:'./models/street_stall.glb',thumbnail:'thumbnails/food.jpg',description:'Robotic arm with joints.'},
+  {id:1,title:'Vintage Camera',model:'./models/flowervase.glb',thumbnail:'thumbnails/flower.jpg',description:'A stylized vintage camera.'},
+  {id:2,title:'Sci-Fi Helmet',model:'./models/mobile_phone.glb',thumbnail:'thumbnails/phone.jpg',description:'Helmet with emissive visor.'},
+  {id:3,title:'Mechanical Arm',model:'./models/street_stall.glb',thumbnail:'thumbnails/food.jpg',description:'Robotic arm with joints.'},
+  {id:1,title:'Vintage Camera',model:'./models/flowervase.glb',thumbnail:'thumbnails/flower.jpg',description:'A stylized vintage camera.'},
+  {id:2,title:'Sci-Fi Helmet',model:'./models/mobile_phone.glb',thumbnail:'thumbnails/phone.jpg',description:'Helmet with emissive visor.'},
+  {id:3,title:'Mechanical Arm',model:'./models/street_stall.glb',thumbnail:'thumbnails/food.jpg',description:'Robotic arm with joints.'}
+];
+
+const grid=document.getElementById("model-grid");
+const overlay=document.getElementById("modal-overlay");
+const viewerEl=document.getElementById("viewer");
+const closeBtn=document.getElementById("close-btn");
+const infoTitle=document.getElementById("info-title");
+const infoDesc=document.getElementById("info-desc");
+const loaderWrap=document.getElementById("loader");
+const loaderFill=document.getElementById("loader-fill");
+const loaderText=document.getElementById("loader-text");
+const rotateHint=document.getElementById("rotate-hint");
+
+let renderer,scene,camera,controls,currentModel,animId;
+const rgbeLoader=new RGBELoader();
+const ro=new ResizeObserver(()=>resizeRenderer());
+
+const environments={ 
+  studio:"env/studio.hdr",
+  day:"env/day.hdr",
+  night:"env/night.hdr" 
+};
+
+/* ------------------------------
+   BUILD GRID CARDS
+------------------------------ */
+models.forEach(m=>{
+  const card=document.createElement("article");
+  card.className="card";
+  card.innerHTML=`
+    <img class="thumb" src="${m.thumbnail}">
+    <div class="card-body"><h3>${m.title}</h3><div class="meta">Click to view</div></div>
+  `;
+  card.onclick=()=>openModal(m.id);
+  grid.appendChild(card);
+});
+
+/* ------------------------------
+   3D TILT EFFECT FOR CARDS
+------------------------------ */
+document.querySelectorAll(".card").forEach(card=>{
+  card.addEventListener("mousemove",e=>{
+    const r=card.getBoundingClientRect();
+    const x=e.clientX - r.left;
+    const y=e.clientY - r.top;
+
+    const rotY=((x / r.width) - 0.5) * 20;
+    const rotX=((y / r.height) - 0.5) * -20;
+
+    card.style.transform=`rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.05)`;
+  });
+
+  card.addEventListener("mouseleave",()=>{
+    card.style.transform="rotateX(0deg) rotateY(0deg) scale(1)";
+  });
+});
+
+/* ------------------------------
+   LOAD ENVIRONMENT
+------------------------------ */
+function loadEnvironment(hdr){
+  rgbeLoader.load(hdr,tex=>{
+    tex.mapping=THREE.EquirectangularReflectionMapping;
+    scene.environment=tex;
+    scene.background=new THREE.Color(0xffffff);
+  });
+}
+
+function setActiveEnvButton(env){
+  document.querySelectorAll(".env-buttons button").forEach(b=>{
+    b.classList.toggle("active", b.dataset.env===env);
+  });
+}
+
+/* ------------------------------
+   OPEN MODAL
+------------------------------ */
+function openModal(id){
+  const meta=models.find(x=>x.id===id);
+
+  overlay.classList.add("open");
+  infoTitle.textContent=meta.title;
+  infoDesc.textContent=meta.description;
+
+  setTimeout(()=>initViewer(meta),50);
+}
+
+/* ------------------------------
+   INITIALIZE VIEWER
+------------------------------ */
+function initViewer(meta){
+  if(renderer){
+    renderer.dispose();
+    renderer.domElement.remove();
+  }
+
+  loaderWrap.classList.remove("loader-hidden");
+  loaderFill.style.width="0%";
+  loaderText.textContent="Loading 0%";
+
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(viewerEl.clientWidth,viewerEl.clientHeight);
+  renderer.setClearColor(0xffffff,1);
+  viewerEl.appendChild(renderer.domElement);
+
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0xffffff);
+
+  camera=new THREE.PerspectiveCamera(
+    45,
+    viewerEl.clientWidth/viewerEl.clientHeight,
+    0.1,1000
+  );
+
+  scene.add(new THREE.HemisphereLight(0xffffff,0xaaaaaa,0.6));
+  const dir=new THREE.DirectionalLight(0xffffff,1);
+  dir.position.set(4,10,6);
+  scene.add(dir);
+
+  controls=new OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true;
+  controls.addEventListener("start",()=>rotateHint.classList.remove("show"));
+
+  new GLTFLoader().load(
+    meta.model,
+    (gltf)=>{
+      currentModel=gltf.scene;
+      scene.add(currentModel);
+      fitModel(currentModel);
+
+      setTimeout(()=>{
+        loaderWrap.classList.add("loader-hidden");
+        showRotateHint();
+      },200);
+    },
+    (xhr)=>{
+      if(xhr.total){
+        const p=(xhr.loaded/xhr.total)*100;
+        loaderFill.style.width=p+"%";
+        loaderText.textContent=`Loading ${Math.round(p)}%`;
+      }
+    }
+  );
+
+  loadEnvironment(environments.studio);
+  setActiveEnvButton("studio");
+
+  document.querySelectorAll(".env-buttons button").forEach(btn=>{
+    btn.onclick=()=>{
+      loadEnvironment(environments[btn.dataset.env]);
+      setActiveEnvButton(btn.dataset.env);
+    };
+  });
+
+  ro.observe(viewerEl);
+  animate();
+}
+
+/* ROTATE HINT */
+function showRotateHint(){
+  rotateHint.textContent = /Mobi|Android/i.test(navigator.userAgent)
+    ? "Tap to rotate" : "Drag to rotate";
+
+  rotateHint.classList.add("show");
+  setTimeout(()=>rotateHint.classList.remove("show"),4500);
+}
+
+/* ANIMATION LOOP */
+function animate(){
+  animId=requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene,camera);
+}
+
+function resizeRenderer(){
+  if(!renderer) return;
+  const w=viewerEl.clientWidth;
+  const h=viewerEl.clientHeight;
+  renderer.setSize(w,h);
+  camera.aspect=w/h;
+  camera.updateProjectionMatrix();
+}
+
+function fitModel(model){
+  const box=new THREE.Box3().setFromObject(model);
+  const size=box.getSize(new THREE.Vector3());
+  const center=box.getCenter(new THREE.Vector3());
+
+  model.position.sub(center);
+
+  const maxDim=Math.max(size.x,size.y,size.z);
+  camera.position.set(0,maxDim*0.8,maxDim*2.0);
+  controls.target.set(0,0,0);
+  controls.update();
+}
+
+/* CLOSE MODAL */
+closeBtn.addEventListener("click",()=>{
+  overlay.classList.remove("open");
+  cleanupViewer();
+});
+
+function cleanupViewer(){
+  if(animId) cancelAnimationFrame(animId);
+  if(renderer){
+    renderer.dispose();
+    renderer.domElement.remove();
+  }
+  scene=null; camera=null; controls=null; renderer=null;
+}
+
+</script>
+
+</body>
+</html>
