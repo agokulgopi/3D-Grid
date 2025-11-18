@@ -360,7 +360,7 @@ import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 
 /* models */
 const models = [
-  { id:1, title:'Vintage Camera', model:'./models/flowervase.glb', thumbnail:'thumbnails/flower.jpg', description:'A stylized vintage camera.' },
+  { id:1, title:'Stall 1', model:'./models/stall.glb', thumbnail:'thumbnails/flower.jpg', description:'A stylized vintage camera.' },
   { id:2, title:'Sci-Fi Helmet', model:'./models/mobile_phone.glb', thumbnail:'thumbnails/phone.jpg', description:'Helmet with emissive visor.' },
   { id:3, title:'Mechanical Arm', model:'./models/street_stall.glb', thumbnail:'thumbnails/food.jpg', description:'Robotic arm with joints.' },
   { id:1, title:'Vintage Camera', model:'./models/flowervase.glb', thumbnail:'thumbnails/flower.jpg', description:'A stylized vintage camera.' },
@@ -471,10 +471,10 @@ function initViewer(meta){
     }
   );
 
-  loadEnvironment(environments.studio);
+  loadEnvironment(environments.day);
 
   document.querySelectorAll(".env-buttons button").forEach(b => b.classList.remove("active"));
-  document.querySelector('.env-buttons button[data-env="studio"]').classList.add("active");
+  document.querySelector('.env-buttons button[data-env="day"]').classList.add("active");
 
   document.querySelectorAll(".env-buttons button").forEach(btn=>{
     btn.onclick = () => {
