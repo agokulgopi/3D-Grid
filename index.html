@@ -18,7 +18,6 @@
     body {
       margin:0;
       font-family:Inter,system-ui,Arial,sans-serif;
-      /* background: linear-gradient(180deg, #FFF5F5 0%, #A8D9F7 50%, #FFFFFF 100%); */
       background:#DCD;
       color:var(--text);
       min-height:100vh;
@@ -28,7 +27,7 @@
 
     header, footer {
       padding:18px 24px;
-      background: #000;
+      background:#000;
       backdrop-filter:blur(4px);
     }
 
@@ -36,19 +35,12 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      height: 75px;
+      height:75px;
     }
 
     header h1 {
       margin:0;
       font-size:1.1rem;
-    }
-
-    header nav a {
-      color:var(--text);
-      opacity:.8;
-      margin-left:12px;
-      text-decoration:none;
     }
 
     .container {
@@ -58,69 +50,70 @@
       padding:0 18px;
     }
 
+    /* GRID: Desktop = 3 cards, Mobile = 2 cards */
     .grid {
       display:grid;
       grid-template-columns:repeat(3,1fr);
       gap:18px;
     }
 
+    /* Mobile = 2 cards */
+    @media(max-width:720px) {
+      .grid {
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
     /* CARD BASE */
     .card {
-      background: #EDEFF2;
-      color: midnightblue;
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: .18s ease;
-      padding-bottom: 8px;
-      text-align: center;              /* center align text */
-      position: relative;
+      background:#EDEFF2;
+      color:midnightblue;
+      border-radius:10px;
+      overflow:hidden;
+      cursor:pointer;
+      transition:.18s ease;
+      padding-bottom:8px;
+      text-align:center;
+      position:relative;
     }
 
-    /* Hover Lift */
     .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 30px rgba(2, 6, 23, .6);
+      transform:translateY(-6px);
+      box-shadow:0 10px 30px rgba(2,6,23,.6);
     }
 
-    /* Thumbnail */
     .thumb {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
+      width:100%;
+      height:200px;
+      object-fit:cover;
     }
 
-    /* CARD BODY */
     .card-body {
-      padding: 12px 10px;
+      padding:12px 10px;
     }
 
-    /* Title */
     .card-body h3 {
-      margin: 6px 0;
-      font-size: 1.1rem;
-      font-weight: 700;
-      text-align: center;              /* center title */
+      margin:6px 0;
+      font-size:1.1rem;
+      font-weight:700;
+      text-align:center;
     }
 
-    /* "CLICK TO VIEW" — HIDDEN BY DEFAULT */
+    /* Click to view — hidden by default */
     .card-body .meta {
-      opacity: 0;
-      transform: translateY(6px);
-      transition: 
-        opacity .25s ease,
-        transform .25s ease;
-      font-size: 0.85rem;
-      color: #333;
-      text-align: center;
+      opacity:0;
+      transform:translateY(6px);
+      transition:opacity .25s ease, transform .25s ease;
+      font-size:0.85rem;
+      color:#333;
+      text-align:center;
     }
 
-    /* SHOW on hover */
+    /* visible on hover */
     .card:hover .meta {
-      opacity: 1;
-      transform: translateY(0);
+      opacity:1;
+      transform:translateY(0);
     }
-
 
     /* =============================
         MODAL + RESPONSIVE BEHAVIOR
@@ -151,20 +144,6 @@
       position:relative;
     }
 
-    .modal::before {
-      content:"";
-      position:absolute;
-      top:0;
-      bottom:0;
-      left:calc(100% - 420px - 1px);
-      width:1px;
-      background:rgba(255,255,255,0.32);
-      border-right:1px solid rgba(255,255,255,0.55);
-      box-shadow:0 0 12px rgba(0,0,0,0.12);
-      pointer-events:none;
-    }
-
-    /* Tablet */
     @media(max-width:1024px){
       .modal {
         grid-template-columns:1fr 360px;
@@ -172,7 +151,6 @@
       }
     }
 
-    /* Mobile */
     @media(max-width:720px) {
       .modal {
         grid-template-columns:1fr;
@@ -183,50 +161,20 @@
         max-height:95vh;
         overflow-y:auto;
       }
-
-      .modal::before { display:none; }
-
-      .viewer {
-        width:100%;
-        height:60vh;
-        min-height:300px;
-      }
-
-      .info {
-        padding:16px;
-        background:#fff;
-        color:#000;
-      }
-
-      .close {
-        top:8px;
-        right:8px;
-        font-size:24px;
-      }
     }
 
-    /* Tiny phones */
-    @media(max-width:420px){
-      .viewer { height:52vh; }
-
-      .env-buttons { flex-direction:column; }
-      .env-buttons button { width:100%; }
-    }
-
-    /* Viewer Canvas */
     .viewer {
       position:relative;
-      background:#ffffff !important;
+      background:#fff !important;
     }
 
     .viewer canvas {
       width:100%;
       height:100%;
-      background:#ffffff !important;
+      background:#fff !important;
       display:block;
     }
 
-    /* Loader */
     .loader-wrap {
       position:absolute;
       inset:0;
@@ -234,7 +182,7 @@
       flex-direction:column;
       justify-content:center;
       align-items:center;
-      background:#ffffff;
+      background:#fff;
       z-index:20;
       transition:opacity .4s ease;
     }
@@ -278,10 +226,10 @@
       font-size:14px;
       color:#222;
       box-shadow:0 6px 18px rgba(0,0,0,0.12);
-      pointer-events:none;
       opacity:0;
       transition:opacity .35s ease;
       z-index:25;
+      pointer-events:none;
     }
 
     .rotate-hint.show { opacity:1; }
@@ -325,19 +273,15 @@
       cursor:pointer;
       font-size:15px;
       font-weight:500;
-      transition:
-        background 0.25s ease,
-        transform 0.25s ease,
-        box-shadow 0.25s ease;
+      transition:background .25s, transform .25s, box-shadow .25s;
     }
 
-    /* Hover */
     .env-buttons button:hover {
       background:var(--accent);
       color:white;
       transform:translateY(-3px);
       box-shadow:0 6px 18px rgba(6,182,212,0.45);
-      animation:envPulse 0.9s ease-out forwards;
+      animation:envPulse .9s ease-out forwards;
     }
 
     @keyframes envPulse {
@@ -346,7 +290,6 @@
       100% { box-shadow:0 0 0 rgba(6,182,212,0); }
     }
 
-    /* Active button */
     .env-buttons button.active {
       background:var(--accent);
       color:white;
@@ -369,7 +312,6 @@
 
 <header>
   <h1>3D Model Showcase</h1>
-  <!-- <nav><a href="#">Home</a><a href="#">Models</a><a href="#">About</a></nav> -->
 </header>
 
 <main class="container">
@@ -454,7 +396,10 @@ models.forEach(m => {
   card.className = "card";
   card.innerHTML = `
     <img class="thumb" src="${m.thumbnail}">
-    <div class="card-body"><h3>${m.title}</h3><div class="meta">Click to view</div></div>
+    <div class="card-body">
+      <h3>${m.title}</h3>
+      <div class="meta">Click to view</div>
+    </div>
   `;
   card.onclick = () => openModal(m.id);
   grid.appendChild(card);
@@ -526,21 +471,15 @@ function initViewer(meta){
     }
   );
 
-  /* Set initial environment */
   loadEnvironment(environments.studio);
 
-  /* Highlight default active button */
   document.querySelectorAll(".env-buttons button").forEach(b => b.classList.remove("active"));
   document.querySelector('.env-buttons button[data-env="studio"]').classList.add("active");
 
-  /* Environment button events */
   document.querySelectorAll(".env-buttons button").forEach(btn=>{
     btn.onclick = () => {
       loadEnvironment(environments[btn.dataset.env]);
-
-      document.querySelectorAll(".env-buttons button")
-        .forEach(b => b.classList.remove("active"));
-
+      document.querySelectorAll(".env-buttons button").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
     };
   });
@@ -586,7 +525,6 @@ function fitModel(model){
   controls.update();
 }
 
-/* Close modal */
 closeBtn.addEventListener("click",()=>{
   overlay.classList.remove("open");
   cleanupViewer();
